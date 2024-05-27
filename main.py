@@ -19,6 +19,19 @@ def check_login(request):
         return True
     return False
 
+def solved_for_handle(handle):                                                     # get the solved problems for given handle
+    User_URL = f"https://codeforces.com/api/user.status?handle={handle}&*"         #---
+    get = session.get(User_URL)                                                      #  |--> enter the status page and get it decoded as html  
+    soup = BeautifulSoup(get.content,'html5lib')                                        #---
+    body_as_string = str(soup.find('body'))                                                     # get from this code what is in the body as astring
+    body = json.loads(body_as_string[30:-8])                                                  # convert body string to a list
+    accepted = set()
+
+    for problem in body:                                                            
+        if problem['verdict'] == 'OK':                                              # check if this problem is solved or not 
+            accepted.add(problem['problem']['name'])                                # add the contest id and prblem index to accepted set
+    
+    return accepted
 
 def login(handle, password):
     URL = "https://codeforces.com/enter"
@@ -40,8 +53,8 @@ def login(handle, password):
     request = session.post(URL,data=login_data,headers=headers)
     return check_login(request)
 
-def solved_for_handle(handle):
-    # Enter the status page and get it decoded as html and find number of pages of submissions                        
+def solved_main_handle(handle):
+    # Enter the status page and get it decoded as html and find number of pages of submissions  
     User_URL = f"https://codeforces.com/submissions/{handle}/page/1"        
     get = session.get(User_URL)                                         
     soup = BeautifulSoup(get.content,'html5lib')                              
@@ -75,11 +88,14 @@ def solved_for_handle(handle):
 
 # combine all solved problems for each handle in a dictionary
 def solved_problems_for_all(handles):                                        
-    accepted = frozenset()                                                        
+    accepted = frozenset()                                                     
     for handle in handles:
         # for every handle get solved problems
-        for_handle = solved_for_handle(handle.strip('\n'))
+        for_handle = solved_for_handle(handle.strip('\n')) if handle != self_handle else solved_main_handle(handle)
         accepted = accepted.union(for_handle)
+    sys.stdout = open("tmp.py","w",encoding='utf-8')
+    print(accepted)
+    sys.stdout = open("output.txt","w",encoding='utf-8')
     return accepted
 
 def getCsrf(URL:str):
@@ -105,7 +121,6 @@ def makeMash(problems:list, mash_name:str, Duration):
 
         result = session.post('https://codeforces.com/data/mashup', data=dataForProblem)
         data = result.json()
-
         # Make Payload
         place = data['problems'][0]
         dic = {"id": place['id'], "index": chr(ord('A')+index)}
@@ -133,7 +148,8 @@ if not validity:
     print('Incorrect Password or Username')
     quit()
 
-accepted = solved_problems_for_all(handles)              # Get all solved problems of all handles    
+accepted = solved_problems_for_all(handles)              # Get all solved problems of all handles                       
+
 while problems_counter:
     page += 1            
 
@@ -169,14 +185,14 @@ while problems_counter:
             quit()
 
         for problem,index in problems:                                                                           
-            if (problem not in accepted) and (problem not in visited):                             # for every problem check that it isn't solved by any one and not been taken before
+            if (problem not in accepted) and (index not in visited) and (max([ord(i) for i in problem]) < 128):                             # for every problem check that it isn't solved by any one and not been taken before
                 problems_counter -= 1
+                rate_with_count[rate[rate_index]] -= 1                                                     # decrease the number of wanted problems for this rate
                 visited.add(problem)
                 result.append(f"--> Problem: {problem}, with rate: {rate[rate_index]}")        # add the problem whith its rate to output list
                 final.append(index)
                 break
     
-    rate_with_count[rate[rate_index]] -= 1                                                     # decrease the number of wanted problems for this rate
     if rate_with_count[rate[rate_index]] == 0:                                                 # if there are no more wanted problems for this rate go to the next 
         rate_index += 1
         page = 0
