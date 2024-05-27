@@ -19,12 +19,15 @@ rate_index = 0
 try:
     problems_counter = int(enter[0][:-1])
     tg = enter[2].rstrip('\n').split(',')
-    tags = ""
-    for tag in range(len(tg)):
-        tags += tg[tag].strip(' ')
-        if tag < len(tg)-1:
-            tags += ','
-    tags = tags.replace(' ','%20') 
+    if tg == ['No tags']:
+        tags = 'No tags'
+    else:
+        tags = ""
+        for tag in range(len(tg)):
+            tags += tg[tag].strip(' ')
+            if tag < len(tg)-1:
+                tags += ','
+        tags = tags.replace(' ','%20') 
     self_handle , password = enter[3].split()
     contest_name , duration = enter[4].split()
     handles = enter[5:]                                                            
