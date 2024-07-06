@@ -14,7 +14,7 @@ Then it make a mash on the logged in handle with given name and duration.<br>
 <b>Instructions for how to enter data in input.txt file:</b><br>
 1- The first line should contain the desired number of problems on the mash.<br>  
 2- The second line should contain the rate of problems and number of each separated by ":"<br>
-3- The third line should contain tags of problems separated by ","<br>
+3- The third line should contain tags of problems separated by "," .. OR "No tags" in case there are no specific tags<br>
 4- The fourth one should contain login information : Username and Password separated by space.<br> 
 5- The fifth should contain mash information : Name and duration in minuts separated by space.<br>
 6- For any number of lines, input handles one handle per line.<br>
